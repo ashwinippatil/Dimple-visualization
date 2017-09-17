@@ -11,4 +11,4 @@ Use Log.csv in data folder.
 
 Open index.html file with a browser to access Log.csv and visualize the trend and read the data using charts.
 
-![Data Viz](/../Dimple-visualization/MediumViews.png?raw=true "Views based on Medium")
+[![Data Viz](/../Dimple-visualization/MediumViews.png?raw=true "Views based on Medium")]
