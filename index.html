@@ -1,0 +1,231 @@
+<html>
+<head>
+    <style>
+        .graphContainer {
+            overflow-x: scroll;
+            overflow-y: scroll;
+        }
+    </style>
+</head>
+<body>
+Select Input File : <input type="file" id="file-input"/>
+
+<div id="chartContainer-1" class="graphContainer"></div>
+<div id="chartContainer-2" class="graphContainer"> <H1> Speaker Distribution</H1></div>
+<div id="chartContainer-3" class="graphContainer"></div>
+<div id="chartContainer-4" class="graphContainer"></div>
+
+<script src="lib/d3.js"></script>
+<script src="lib/dimple.min.js"></script>
+<script src="lib/sampleData.js"></script>
+<script type="text/javascript">
+    function readSingleFile(e) {
+        var file = e.target.files[0];
+        if (!file) {
+            return;
+        }
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            var contents = e.target.result;
+            loadGraph(contents);
+        };
+        reader.readAsText(file);
+    }
+
+    function displayContents(contents) {
+        var element = document.getElementById('file-content');
+        element.innerHTML = contents;
+    }
+
+    document.getElementById('file-input')
+            .addEventListener('change', readSingleFile, false);
+
+
+    function graphForContainer1(data) {
+        var nestedData = {};
+        var locale = "en-us";
+
+        data.forEach(function (d) {
+            var dateObj = new Date(d["TimeStamp"]);
+            //var month = dateObj.toLocaleString(locale, { month: "short" });
+            var summerizedDate = dateObj.getDate() + '/' + (dateObj.getMonth() + 1) + '/' + dateObj.getFullYear();
+            if (!nestedData[summerizedDate]) {
+                nestedData[summerizedDate] = {};
+                nestedData[summerizedDate][d["Medium"]] = 1;
+            } else {
+                if (nestedData[summerizedDate][d["Medium"]]) {
+                    nestedData[summerizedDate][d["Medium"]] += 1;
+                } else {
+                    nestedData[summerizedDate][d["Medium"]] = 1;
+                }
+            }
+        });
+
+        var summerizedData = [];
+        var dataObj;
+        for (i in nestedData) {
+            Object.keys(nestedData[i]).forEach(function (key) {
+                dataObj = {
+                    TimeStamp: i,
+                }
+                dataObj['Medium'] = key;
+                dataObj['Views'] = nestedData[i][key];
+                summerizedData.push(dataObj);
+            });
+        }
+
+        var svg = dimple.newSvg("#chartContainer-1", '100%', 400);
+
+        // Create the chart as usual
+        var myChart = new dimple.chart(svg, summerizedData);
+        //myChart.setBounds(100, 80, 100, 300)
+
+        var x = myChart.addTimeAxis("x", "TimeStamp", "%d/%m/%Y", "%B %d");
+        var y = myChart.addMeasureAxis("y", "Views");
+
+        myChart.addSeries("Medium", dimple.plot.bubble);
+
+        var s = myChart.addSeries("Medium", dimple.plot.line);
+
+        s.lineMarkers = true;
+
+        myChart.addLegend(180, 10, 360, 20, "right");
+
+        myChart.draw();
+    }
+
+    function graphForContainer2(data) {
+     
+        var nestedData = {};
+        data.forEach(function (d) {
+            if (!d["Speaker"]) {
+                return;
+            }
+            if (!nestedData[d["Speaker"]]) {
+                nestedData[d["Speaker"]] = 1;
+            } else {
+                nestedData[d["Speaker"]] += 1;
+            }
+        });
+
+        var summerizedData = [];
+        var dataObj;
+        for (i in nestedData) {
+            dataObj = {
+                Speaker: i,
+            }
+            dataObj['Views'] = nestedData[i];
+            summerizedData.push(dataObj);
+        }
+
+
+        var svg = dimple.newSvg("#chartContainer-2", 900, 400);
+        var myChart = new dimple.chart(svg, summerizedData);
+        //myChart.setBounds(20, 20, 460, 360)
+        myChart.addMeasureAxis("p", "Views");
+        myChart.addSeries("Speaker", dimple.plot.pie);
+        myChart.addLegend(100, 20, 90, 300, "left");
+        myChart.draw();
+    }
+
+
+    function graphForContainer3(data) {
+        var nestedTypeData = {};
+        var nestedSCAPData = {};
+        data.forEach(function (d) {
+            if (!d["Type"]) {
+                return;
+            }
+            if (!nestedTypeData[d["Type"]]) {
+                nestedTypeData[d["Type"]] = 1;
+            } else {
+                nestedTypeData[d["Type"]] += 1;
+            }
+        
+            if (!d["SCAP"]) {
+                return;
+            }
+            if (!nestedSCAPData[d["SCAP"]]) {
+                    nestedSCAPData[d["SCAP"]] = 1;
+            } else {
+                    nestedSCAPData[d["SCAP"]] += 1;
+            }
+        });
+
+    
+        var summerizedData = [];
+        var dataObj;
+        for (i in nestedTypeData) {
+            dataObj = {
+                Type: i,
+            }
+            dataObj['Views'] = nestedTypeData[i];
+            summerizedData.push(dataObj);
+        }
+        for (i in nestedSCAPData) {
+            dataObj = {
+                SCAP: i,
+            }
+            dataObj['Views'] = nestedSCAPData[i];
+            summerizedData.push(dataObj);
+        }
+
+        var svg = dimple.newSvg("#chartContainer-3", 590, 400);
+
+        var myChart = new dimple.chart(svg, summerizedData);
+        myChart.setBounds(20, 20, 460, 360)
+        myChart.addMeasureAxis("p", "Views");
+        var outerRing = myChart.addSeries("SCAP", dimple.plot.pie);
+        var innerRing = myChart.addSeries("Type", dimple.plot.pie);
+        // Negatives are calculated from outside edge, positives from center
+        outerRing.innerRadius = "-30px";
+        innerRing.outerRadius = "-40px";
+        innerRing.innerRadius = "-70px";
+        myChart.addLegend(500, 20, 90, 300, "left");
+        myChart.draw();
+
+    }
+
+
+    function graphForContainer4(data) {
+        var nestedData = {};
+        data.forEach(function (d) {
+            if (!nestedData[d["Resource"]]) {
+                nestedData[d["Resource"]] = 1;
+            } else {
+                nestedData[d["Resource"]] += 1;
+            }
+        });
+
+        var summerizedData = [];
+        var dataObj;
+        for (i in nestedData) {
+            dataObj = {
+                Resource: i,
+            }
+            dataObj['Views'] = nestedData[i];
+            summerizedData.push(dataObj);
+        }
+
+        var svg = dimple.newSvg("#chartContainer-4", '100%', 400);
+        var myChart = new dimple.chart(svg, summerizedData);
+        //myChart.setBounds(60, 30, 510, 305)
+        var x = myChart.addCategoryAxis("x", "Resource");
+
+        myChart.addMeasureAxis("y", "Views");
+        myChart.addSeries(null, dimple.plot.bar);
+        myChart.draw();
+    }
+
+
+    function loadGraph(dataInText) {
+        var data = d3.csvParse(dataInText);
+
+        graphForContainer1(data);
+        graphForContainer2(data)
+        graphForContainer3(data)
+        graphForContainer4(data)
+    }
+</script>
+</body>
+</html>
