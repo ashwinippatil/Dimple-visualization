@@ -11,4 +11,5 @@ Use Log.csv in data folder.
 
 Open index.html file with a browser to access Log.csv and visualize the trend and read the data using charts.
 
-[![Data Viz](Dimple-visualization/MediumViews.png "Views based on Medium")]
+![mediumviews](https://user-images.githubusercontent.com/17923753/30523741-c0116652-9bb4-11e7-8f99-eb9941df547e.png)
+
